@@ -23,11 +23,7 @@ interface OrderDialogProps {
   onClose: () => void;
 }
 
-export default function OrderDialog({
-  open,
-
-  onClose,
-}: OrderDialogProps) {
+export default function OrderDialog({ open, onClose }: OrderDialogProps) {
   const { products, addOrder } = useOrderStore();
   const form = useOrderForm();
 
@@ -64,7 +60,15 @@ export default function OrderDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) {
+          form.resetForm();
+          onClose();
+        }
+      }}
+    >
       <DialogContent className=" md:max-w-6xl overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
