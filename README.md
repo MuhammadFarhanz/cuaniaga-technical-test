@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📦 Cuaniaga – Order Management System
 
-## Getting Started
+---
 
-First, run the development server:
+## ✨ Features
+
+- 🔧 **Order Creation**: Add products, set quantities, and auto-calculate totals  
+- 🔄 **Status Tracking**: Visual workflow (Pending → Processing → Shipped → Delivered)  
+- 🔍 **Search & Filter**: Quickly find orders by ID, customer name, or status  
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/MuhammadFarhanz/cuaniaga-technical-test.git
+cd cuaniaga
+
+# 2. Install dependencies
+npm install
+
+# 3. Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+📍 Access at: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+🔐 Demo login: Any email/password works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🛠 Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+| Category          | Technology   |
+|-------------------|--------------|
+| Framework         | Next.js 15   |
+| UI Components     | shadcn/ui    |
+| State Management  | Zustand      |
+| Styling           | Tailwind CSS |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+![Image](https://github.com/user-attachments/assets/4f01d138-83c6-4474-9e1f-d26239e55aac)
 
-## Deploy on Vercel
+![Image](https://github.com/user-attachments/assets/bda6fcd1-3f0b-438f-be4e-ac410d7598fc)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+![Image](https://github.com/user-attachments/assets/eb1e3de5-a287-4abf-955e-929b8cb6a650)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+![Image](https://github.com/user-attachments/assets/02659478-0bff-4547-ad05-c12a618e5f9f)
