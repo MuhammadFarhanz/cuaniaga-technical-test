@@ -6,28 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import Image from "next/image";
-import { getCategoryColor, mockProducts } from "@/lib/utils";
+import { getCategoryColor, getStockStatus } from "@/lib/utils";
+import { useOrderStore } from "@/lib/stores/orderStore";
 
 export default function ProductList() {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const { products } = useOrderStore();
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter(
+    return products.filter(
       (product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
-
-  const getStockStatus = (stock: number) => {
-    if (stock > 20)
-      return { label: "In Stock", color: "bg-green-100 text-green-800" };
-    if (stock > 5)
-      return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
-    return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
-  };
-
-  console.log();
+  }, [searchTerm, products]);
 
   return (
     <div className="space-y-6">
@@ -107,7 +98,7 @@ export default function ProductList() {
       </Card>
 
       <div className="text-sm text-gray-500">
-        Showing {filteredProducts.length} of {mockProducts.length} products
+        Showing {filteredProducts.length} of {products.length} products
       </div>
     </div>
   );

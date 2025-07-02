@@ -103,3 +103,11 @@ export const getStatusColor = (status: string) => {
       return "bg-gray-100 text-gray-800";
   }
 };
+
+export const getStockStatus = (stock: number) => {
+  if (stock > 20)
+    return { label: "In Stock", color: "bg-green-100 text-green-800" };
+  if (stock > 5)
+    return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
+  return { label: "Out of Stock", color: "bg-red-100 text-red-800" };
+};

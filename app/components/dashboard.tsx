@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, LogOut, Package2, ShoppingCart } from "lucide-react";
 import ProductList from "./product-list";
 import OrderDialog from "./order-dialog";
 import { OrderHistory } from "./order-history";
-import { mockProducts } from "@/lib/utils";
-import { Order } from "@/types/order";
 
 interface DashboardProps {
   user: { name: string; email: string } | null;
@@ -17,22 +15,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("products");
-  const [orders, setOrders] = useState<Order[]>([]);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
-
-  useEffect(() => {
-    const savedOrders = localStorage.getItem("orders");
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    }
-  }, []);
-
-  const handleCreateOrder = (order: Order) => {
-    const updatedOrders = [...orders, order];
-    setOrders(updatedOrders);
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
-    setIsOrderDialogOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,7 +72,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </TabsContent>
 
           <TabsContent value="orders">
-            <OrderHistory orders={orders} />
+            <OrderHistory />
           </TabsContent>
         </Tabs>
       </div>
@@ -97,8 +80,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       <OrderDialog
         open={isOrderDialogOpen}
         onClose={() => setIsOrderDialogOpen(false)}
-        products={mockProducts}
-        onCreateOrder={handleCreateOrder}
       />
     </div>
   );

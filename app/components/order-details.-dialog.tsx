@@ -22,31 +22,31 @@ import { User, MapPin, Calendar, Package2, Edit } from "lucide-react";
 import Image from "next/image";
 import { Order } from "@/types/order";
 import { getCategoryColor, getStatusColor, getStatusIcon } from "@/lib/utils";
+import { useOrderStore } from "@/lib/stores/orderStore";
 
 interface OrderDetailsDialogProps {
   order: Order | undefined;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onStatusUpdate: (orderId: string, newStatus: string) => void;
 }
 
 export default function OrderDetailsDialog({
   order,
   open,
   onOpenChange,
-  onStatusUpdate,
 }: OrderDetailsDialogProps) {
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const { updateOrderStatus } = useOrderStore();
 
-  console.log(order, "nganu");
   if (!order) return null;
 
   const handleStatusUpdate = () => {
     if (newStatus && newStatus !== order.status) {
-      onStatusUpdate(order.id, newStatus);
+      updateOrderStatus(order.id, newStatus as Order["status"]);
       setIsEditingStatus(false);
       setNewStatus("");
+      onOpenChange(false);
     }
   };
 
@@ -57,7 +57,7 @@ export default function OrderDetailsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="md:max-w-6xl max-h-[90vh] overflow-hidden ">
-        <DialogHeader>
+        <DialogHeader className="mt-7">
           <DialogTitle className="flex items-center justify-between">
             <span>Order Details - {order.id}</span>
             <div className="flex items-center gap-2">
@@ -120,7 +120,6 @@ export default function OrderDetailsDialog({
 
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Left Column - Customer & Shipping Info */}
             <div className="space-y-4 h-full">
               <Card className="rounded-md">
                 <CardHeader>
@@ -135,10 +134,7 @@ export default function OrderDetailsDialog({
                     <p className="text-sm text-gray-600">
                       {order?.customer.email || "email@gmai.com"}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {/* {order.customerPhone} */}
-                      +1 (555) 123-4567
-                    </p>
+                    <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
                   </div>
                 </CardContent>
               </Card>
@@ -196,19 +192,17 @@ export default function OrderDetailsDialog({
                       {order.id}
                     </p>
                   </div>
-                  {/* {order?.notes && ( */}
+
                   <div>
                     <p className="text-sm font-medium">Notes:</p>
                     <p className="text-sm text-gray-600">
                       Handle with care - fragile electronics
                     </p>
                   </div>
-                  {/* )} */}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Right Column - Order Items & Summary */}
             <div className="lg:col-span-2 space-y-4">
               <Card className="rounded-md">
                 <CardHeader>
@@ -258,7 +252,6 @@ export default function OrderDetailsDialog({
               <Card className="rounded-md">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    {/* <DollarSign className="h-5 w-5" /> */}
                     Order Summary
                   </CardTitle>
                 </CardHeader>
@@ -272,12 +265,7 @@ export default function OrderDetailsDialog({
                       <span>Tax:</span>
                       <span></span>
                     </div>
-                    {/* {order.discount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount:</span>
-                        <span>-${order.discount.toFixed(2)}</span>
-                      </div>
-                    )} */}
+
                     <Separator />
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total:</span>
@@ -293,3 +281,4 @@ export default function OrderDetailsDialog({
     </Dialog>
   );
 }
+

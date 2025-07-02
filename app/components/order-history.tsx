@@ -1,55 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Eye } from "lucide-react";
-
 import OrderDetailsDialog from "./order-details.-dialog";
 import { Order } from "@/types/order";
 import { getStatusColor, getStatusIcon } from "@/lib/utils";
+import { useOrderStore } from "@/lib/stores/orderStore";
 
-interface OrderHistoryProps {
-  orders: Order[];
-}
-
-export function OrderHistory({ orders }: OrderHistoryProps) {
+export function OrderHistory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order>();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { orders } = useOrderStore();
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = useMemo(
+    () =>
+      orders.filter((order) => {
+        const matchesSearch =
+          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      order.status.toLowerCase() === statusFilter.toLowerCase();
+        const matchesStatus =
+          statusFilter === "all" ||
+          order.status.toLowerCase() === statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
-  });
-
-  const updateStatus = (orderId: string, newStatus: string) => {
-    const storedOrders = localStorage.getItem("orders");
-    const orders = storedOrders ? JSON.parse(storedOrders) : [];
-
-    const updatedOrders = orders.map((order: Order) =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
-
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
-
-    // setOrders(updatedOrders); // Optional - only if you maintain state
-
-    setIsDetailsOpen(false);
-
-    console.log(`Updated order ${orderId} to ${newStatus} in localStorage`);
-  };
+        return matchesSearch && matchesStatus;
+      }),
+    [orders, searchTerm, statusFilter]
+  );
 
   const getOrderCounts = () => {
     return {
@@ -62,7 +46,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
     };
   };
 
-  const counts = getOrderCounts();
+  const counts = useMemo(getOrderCounts, [orders]);
 
   return (
     <div className="space-y-6">
@@ -181,7 +165,6 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
           order={selectedOrder}
           open={isDetailsOpen}
           onOpenChange={setIsDetailsOpen}
-          onStatusUpdate={updateStatus}
         />
       )}
     </div>

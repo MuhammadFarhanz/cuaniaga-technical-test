@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,35 +12,19 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShoppingCart } from "lucide-react";
+import { useAuthStore } from "@/lib/stores/authStore";
 
-interface LoginFormProps {
-  onLogin: (email: string, password: string) => boolean;
-}
-
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm() {
+  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
-
-    if (!email || !password) {
-      setError("Please fill in all fields");
-      setIsLoading(false);
-      return;
-    }
-
-    const success = onLogin(email, password);
-    if (!success) {
-      setError("Invalid credentials");
-    }
-    setIsLoading(false);
+    login(email, password);
   };
 
   return (
@@ -78,11 +61,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                 required
               />
             </div>
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>

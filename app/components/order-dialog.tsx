@@ -14,27 +14,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Search, Plus, Minus, Trash2 } from "lucide-react";
-import { Order, OrderItem, Product } from "@/types/order";
+import { OrderItem, Product } from "@/types/order";
 import { getCategoryColor } from "@/lib/utils";
+import { useOrderStore } from "@/lib/stores/orderStore";
 
 interface OrderDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreateOrder: (order: Order) => void;
-  products: Product[];
 }
 
 export default function OrderDialog({
   open,
-  products,
+
   onClose,
-  onCreateOrder,
 }: OrderDialogProps) {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-
   const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const { products, addOrder } = useOrderStore();
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,25 +83,27 @@ export default function OrderDialog({
   );
 
   const handleSubmit = () => {
-    if (selectedItems.length > 0) {
-      const order = {
-        id: `ORD-${Date.now()}`,
-        customer: { name: customerName, email: customerEmail },
-        items: selectedItems,
-        total,
-        date: new Date().toISOString(),
-        status: "Pending" as const,
-        route: "",
-      };
+    if (selectedItems.length === 0) return;
 
-      onCreateOrder(order);
+    const newOrder = {
+      id: `ORD-${Date.now()}`,
+      customer: { name: customerName, email: customerEmail },
+      items: selectedItems,
+      total,
+      date: new Date().toISOString(),
+      status: "Pending" as const,
+      route: "",
+    };
 
-      setSelectedItems([]);
-      setSearchTerm("");
-      setCustomerName("");
-      setCustomerEmail("");
-      setSearchTerm("");
-    }
+    addOrder(newOrder);
+
+    setSelectedItems([]);
+    setSearchTerm("");
+    setCustomerName("");
+    setCustomerEmail("");
+    setSearchTerm("");
+
+    onClose();
   };
 
   const handleClose = () => {
@@ -120,7 +120,6 @@ export default function OrderDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex gap-6">
-          {/* Left side - Product selection */}
           <div className="flex-1 flex flex-col p-2">
             <div className="space-y-4">
               <div className="space-y-2 ">
@@ -199,7 +198,6 @@ export default function OrderDialog({
             </div>
           </div>
 
-          {/* Right side - Order summary */}
           <div className="w-80 flex flex-col">
             <h3 className="font-semibold mb-4">Order Summary</h3>
 
@@ -276,14 +274,7 @@ export default function OrderDialog({
             {selectedItems.length > 0 && (
               <div className="mt-4 space-y-2">
                 <Separator />
-                {/* <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax (10%):</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div> */}
+
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total:</span>
                   <span>${total.toFixed(2)}</span>

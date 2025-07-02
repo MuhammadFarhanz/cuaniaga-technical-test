@@ -1,44 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { LoginForm } from "./components/login-form";
 import Dashboard from "./components/dashboard";
+import { useAuthStore } from "@/lib/stores/authStore";
+import { useEffect, useState } from "react";
+import { LoaderIcon } from "lucide-react";
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email: string; name: string } | null>(
-    null
-  );
+  const { user, isAuthenticated, logout } = useAuthStore();
+
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
+    setIsHydrated(true);
   }, []);
 
-  const handleLogin = (email: string, password: string) => {
-    if (email && password) {
-      const userData = { email, name: email.split("@")[0] };
-      setUser(userData);
-      setIsAuthenticated(true);
-      localStorage.setItem("currentUser", JSON.stringify(userData));
-      return true;
-    }
-    return false;
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    localStorage.removeItem("currentUser");
-  };
-
-  if (!isAuthenticated) {
-    return <LoginForm onLogin={handleLogin} />;
+  if (!isHydrated) {
+    return (
+      <LoaderIcon className="animate-spin w-20 h-20 fixed top-[50%] left-[50%]" />
+    );
   }
 
-  return <Dashboard user={user} onLogout={handleLogout} />;
+  return isAuthenticated ? (
+    <Dashboard user={user} onLogout={logout} />
+  ) : (
+    <LoginForm />
+  );
 }
