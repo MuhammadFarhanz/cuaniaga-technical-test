@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Search, Plus, Minus, Trash2 } from "lucide-react";
-import { OrderItem, Product } from "@/types/order";
 import { getCategoryColor } from "@/lib/utils";
 import { useOrderStore } from "@/lib/stores/orderStore";
+import { useOrderForm } from "@/lib/hooks/useOrderForm";
 
 interface OrderDialogProps {
   open: boolean;
@@ -28,92 +28,43 @@ export default function OrderDialog({
 
   onClose,
 }: OrderDialogProps) {
-  const [customerName, setCustomerName] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const { products, addOrder } = useOrderStore();
+  const form = useOrderForm();
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = useMemo(
+    () =>
+      products.filter((p) =>
+        p.name.toLowerCase().includes(form.searchTerm.toLowerCase())
+      ),
+    [products, form.searchTerm]
   );
-
-  const addToOrder = (product: Product) => {
-    const existingItem = selectedItems.find(
-      (item) => item.product.id === product.id
-    );
-    if (existingItem) {
-      setSelectedItems(
-        selectedItems.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) }
-            : item
-        )
-      );
-    } else {
-      setSelectedItems([...selectedItems, { product, quantity: 1 }]);
-    }
-  };
-
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setSelectedItems(
-        selectedItems.filter((item) => item.product.id !== productId)
-      );
-    } else {
-      setSelectedItems(
-        selectedItems.map((item) =>
-          item.product.id === productId
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
-    }
-  };
-
   const removeItem = (productId: string) => {
-    setSelectedItems(
-      selectedItems.filter((item) => item.product.id !== productId)
+    form.setSelectedItems(
+      form.selectedItems.filter((item) => item.product.id !== productId)
     );
   };
-
-  const total = selectedItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
 
   const handleSubmit = () => {
-    if (selectedItems.length === 0) return;
+    if (!form.isValid) return;
 
-    const newOrder = {
+    addOrder({
       id: `ORD-${Date.now()}`,
-      customer: { name: customerName, email: customerEmail },
-      items: selectedItems,
-      total,
+      customer: {
+        name: form.customerName.trim(),
+        email: form.customerEmail.trim(),
+      },
+      items: form.selectedItems,
+      total: form.total,
       date: new Date().toISOString(),
-      status: "Pending" as const,
-      route: "",
-    };
+      status: "Pending",
+    });
 
-    addOrder(newOrder);
-
-    setSelectedItems([]);
-    setSearchTerm("");
-    setCustomerName("");
-    setCustomerEmail("");
-    setSearchTerm("");
-
-    onClose();
-  };
-
-  const handleClose = () => {
-    setSelectedItems([]);
-    setSearchTerm("");
+    form.resetForm();
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className=" md:max-w-6xl overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
@@ -126,9 +77,9 @@ export default function OrderDialog({
                 <Label htmlFor="customer-name">Customer Name</Label>
                 <Input
                   id="customer-name"
-                  value={customerName}
+                  value={form.customerName}
                   required
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => form.setCustomerName(e.target.value)}
                   placeholder="Enter customer name"
                 />
               </div>
@@ -137,9 +88,9 @@ export default function OrderDialog({
                 <Input
                   id="customer-email"
                   type="email"
-                  value={customerEmail}
+                  value={form.customerEmail}
                   required
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onChange={(e) => form.setCustomerEmail(e.target.value)}
                   placeholder="Enter customer email"
                 />
               </div>
@@ -152,8 +103,8 @@ export default function OrderDialog({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={form.searchTerm}
+                  onChange={(e) => form.setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -164,7 +115,7 @@ export default function OrderDialog({
                     <Card
                       key={product.id}
                       className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => addToOrder(product)}
+                      onClick={() => form.addToOrder(product)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
@@ -202,13 +153,13 @@ export default function OrderDialog({
             <h3 className="font-semibold mb-4">Order Summary</h3>
 
             <div className="flex-1 overflow-y-auto">
-              {selectedItems.length === 0 ? (
+              {form.selectedItems.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
                   No items in order
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {selectedItems.map((item) => (
+                  {form.selectedItems.map((item) => (
                     <Card key={item.product.id}>
                       <CardContent className="p-3">
                         <div className="flex items-start justify-between">
@@ -235,7 +186,7 @@ export default function OrderDialog({
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                updateQuantity(
+                                form.updateQuantity(
                                   item.product.id,
                                   item.quantity - 1
                                 )
@@ -250,7 +201,7 @@ export default function OrderDialog({
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                updateQuantity(
+                                form.updateQuantity(
                                   item.product.id,
                                   item.quantity + 1
                                 )
@@ -271,13 +222,13 @@ export default function OrderDialog({
               )}
             </div>
 
-            {selectedItems.length > 0 && (
+            {form.selectedItems.length > 0 && (
               <div className="mt-4 space-y-2">
                 <Separator />
 
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total:</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${form.total.toFixed(2)}</span>
                 </div>
               </div>
             )}
@@ -287,7 +238,9 @@ export default function OrderDialog({
                 className="w-full"
                 onClick={handleSubmit}
                 disabled={
-                  selectedItems.length === 0 || !customerName || !customerEmail
+                  form.selectedItems.length === 0 ||
+                  !form.customerName ||
+                  !form.customerEmail
                 }
               >
                 Create Order
@@ -295,7 +248,7 @@ export default function OrderDialog({
               <Button
                 variant="outline"
                 className="w-full bg-transparent"
-                onClick={handleClose}
+                onClick={onClose}
               >
                 Cancel
               </Button>
